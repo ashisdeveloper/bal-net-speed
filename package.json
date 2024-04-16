@@ -4,7 +4,7 @@
   "description": "Balasore Alloys LTD - Internet Speed API with Swagger",
   "main": "index.js",
   "scripts": {
-    "start": "node build/index.js",
+    "start": "node clusteredApp.js",
     "predev": "npm run swagger",
     "prebuild": "npm run swagger",
     "build": "tsc",
