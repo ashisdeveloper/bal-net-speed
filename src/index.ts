@@ -8,7 +8,7 @@ import cron from 'node-cron';
 import Router from "./routes";
 import fetch from "node-fetch";
 
-const PORT = process.env.PORT || 8001;
+const PORT = process.env.PORT;
 
 const appBase: Application = express();
 

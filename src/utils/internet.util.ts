@@ -1,7 +1,8 @@
 import dns from "dns";
 import init_puppeteer from './puppeteerBrowser.util';
-import dotenv from "dotenv";
 import { IInternetSpeedFast } from 'src/models/common/internet';
+import axios, { isCancel, AxiosError } from 'axios';
+import dotenv from "dotenv";
 dotenv.config();
 
 const convertToMpbs = (value: number, unit: string) => {
@@ -109,12 +110,23 @@ export const fastSpeedTest = async () => {
         }
     }
     if (result?.isSuccess) {
-        /* await mysqlProcedure('PROC_OTHER', 'INSERT_INTERNET_SPEED', {
+        let bodyParams: any = {
             intNetLocUid: Number(process.env.APP_LOCATION),
             intNetDownload: result.downloadSpeed,
             intNetUpload: result.uploadSpeed,
             vchNetLog: JSON.stringify(result)
-        }) */
+        }
+
+        await axios.post(`http://${process.env.API_IP}:${process.env.API_PORT}/internet/update-internet-speed-test`, bodyParams)
+
+        try {
+            /* await fetch(`http://${process.env.API_IP}:${process.env.API_PORT}/internet/update-internet-speed-test`, {
+                method: 'POST', body: JSON.stringify(bodyParams)
+            }); */
+        } catch (error) {
+            console.log(error)
+        }
     }
+
     return result
 }

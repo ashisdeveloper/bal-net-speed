@@ -31,3 +31,14 @@ export interface IInternetSpeedDaysApiResponse {
     message: string;
     data?: Array<IInternetSpeedDay>;
 }
+
+export interface IInternetSpeedUpdateApiRequest {
+    intNetLocUid?: number;
+    intNetDownload?: number;
+    intNetUpload?: number;
+    vchNetLog?: string;
+}
+
+export interface IInternetSpeedUpdateApiResponse {
+    successful: boolean;
+}
