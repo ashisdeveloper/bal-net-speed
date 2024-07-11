@@ -130,3 +130,99 @@ export const fastSpeedTest = async () => {
 
     return result
 }
+
+export const ooklaSpeedTest = async () => {
+    let result: IInternetSpeedFast = {
+        downloadSpeed: 0,
+        uploadSpeed: 0,
+        downloadUnit: 'Mbps',
+        uploadUnit: 'Mbps',
+        userLocation: '',
+        userIp: '',
+        isSuccess: false
+    }
+    let lkup = await dnsLookup()
+    if (lkup) {
+
+        const browser = await init_puppeteer()
+        const page = await browser.newPage();
+        try {
+
+            await page.goto('https://www.speedtest.net');
+
+            await page.waitForSelector('.start-text', { visible: true, timeout: 0 })
+            await page.waitFor(1000)
+            let isExist1 = await page.$("#onetrust-accept-btn-handler") != null
+            if (isExist1) {
+                await page.click('#onetrust-accept-btn-handler')
+                await page.waitFor(2000)
+            }
+            await page.click('.start-text')
+            await page.waitFor(1000)
+            await page.waitForSelector('.audienceComponent', { visible: true, timeout: 0 })
+            await page.waitFor(2000)
+
+            console.log('OK')
+
+            result = await page.evaluate(() => {
+                const $ = document.querySelector.bind(document);
+
+                const dlVal = Number($('.result-data-value.download-speed')?.textContent || 0)
+                // const dlUnit = ($('.result-item-latencydown')?.textContent || '').trim()
+
+                const upVal = Number($('.result-data-value.upload-speed')?.textContent || 0)
+                // const upUnit = ($('.result-item-latencyup')?.textContent || '').trim()
+
+                console.log(dlVal)
+                console.log(upVal)
+                let locArr: string[] = [
+                    ($('.result-label.js-data-isp')?.textContent || '').trim(),
+                    ($('.js-data-sponsor')?.textContent || '').trim(),
+                    ($('.result-data.js-sponsor-name')?.textContent || '').trim(),
+                ].filter(i => i)
+
+                return {
+                    downloadSpeed: dlVal,
+                    downloadUnit: 'Mbps',
+                    uploadSpeed: upVal,
+                    uploadUnit: 'Mbps',
+                    userLocation: locArr.join(', ').trim(),
+                    userIp: ($('.result-data.js-data-ip')?.textContent || '').trim(),
+                    isSuccess: Boolean(
+                        ($('.result-data.js-sponsor-name')?.textContent || '').trim() != ''
+                    )
+                };
+            });
+        } catch (err) {
+            console.error(' -> something went wrong!', err);
+        } finally {
+            await page.close();
+            await browser.close();
+            // result.downloadSpeed = convertToMpbs(result.downloadSpeed, result.downloadUnit)
+            // result.uploadSpeed = convertToMpbs(result.uploadSpeed, result.uploadUnit)
+            result.downloadUnit = 'Mbps'
+            result.uploadUnit = 'Mbps'
+        }
+    }
+    console.log(result)
+    if (result?.isSuccess) {
+        let bodyParams: any = {
+            intNetLocUid: Number(process.env.APP_LOCATION),
+            intNetDownload: result.downloadSpeed,
+            intNetUpload: result.uploadSpeed,
+            vchNetLog: JSON.stringify(result)
+        }
+
+        await axios.post(`http://${process.env.API_IP}:${process.env.API_PORT}/internet/update-internet-speed-test`, bodyParams)
+
+        try {
+            /* await fetch(`http://${process.env.API_IP}:${process.env.API_PORT}/internet/update-internet-speed-test`, {
+                method: 'POST', body: JSON.stringify(bodyParams)
+            }); */
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    return result
+}
