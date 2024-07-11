@@ -151,7 +151,7 @@ export const ooklaSpeedTest = async () => {
             await page.goto('https://www.speedtest.net');
 
             await page.waitForSelector('.start-text', { visible: true, timeout: 0 })
-            await page.waitFor(1000)
+            await page.waitFor(5000)
             let isExist1 = await page.$("#onetrust-accept-btn-handler") != null
             if (isExist1) {
                 await page.click('#onetrust-accept-btn-handler')
